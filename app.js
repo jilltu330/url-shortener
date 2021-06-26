@@ -1,6 +1,7 @@
 const { urlencoded } = require('express')
 const express = require('express')
 const exphbs = require('express-handlebars')
+const random = require('string-random')
 const app = express()
 const PORT = 3000
 
@@ -14,11 +15,14 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
-  const result = req.body.url
-  console.log(result)
+  const header = req.headers.origin
+  const hash = random(5)
+  const result = header+'/'+hash
   res.render('result', { result })
 })
 
+
+
 app.listen(PORT, () => [
-  console.log(`App is running on http://localhosr:${3000}`)
+  console.log(`App is running on http://localhost:${3000}`)
 ])
