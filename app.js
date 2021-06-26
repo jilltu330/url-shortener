@@ -32,18 +32,33 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
   const url = req.body.url
   const header = req.headers.origin
-  const hash = random(5)
-  const result = header + '/' + hash
-  return ShortenUrl.create({ hash, url })
-    .then(() => res.render('result', { result }))
-    .catch(error => { console.log(error) })
+  return validateHash(random(5))
+  .then(hash => { return ShortenUrl.create({ hash, url })})
+  .then(shortenUrl => {
+    console.log(shortenUrl)
+    const hash = shortenUrl.hash
+    const result = header + '/' + hash
+    res.render('result', { result })
+  }).catch(error => { res.status(500).send() })
 })
 
-app.get('/:hash', (req,res)=>{
+const validateHash = function (hash) {
+  return ShortenUrl.exists({ hash }).then(exist => {
+    if (exist) {
+      console.log("duplicated hash:" + hash)
+      hash = random(5)
+      return validateHash(hash)
+    } else {
+      return hash
+    }
+  })
+}
+
+app.get('/:hash', (req, res) => {
   const hash = req.params.hash
-  return ShortenUrl.findOne({hash})
-    .then(shortenUrl=> res.redirect(shortenUrl.url))
-    .catch(error => { console.log(error) })
+  return ShortenUrl.findOne({ hash })
+    .then(shortenUrl => res.redirect(shortenUrl.url))
+    .catch(error => { res.status(500).send() })
 })
 
 app.listen(PORT, () => [
