@@ -21,22 +21,26 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
   const url = req.body.url
   const host = req.headers.origin
+  let urlExisted = false
   ShortenUrl.find({ url }).lean()
     .then(urls => {
       if (urls.length > 0) {
         const result = host + '/' + urls[0].hash
         res.render('result', { result })
-      } else {
-        validateHash(random(5))
-          .then(hash => { return ShortenUrl.create({ hash, url }) })
-          .then(shortenUrl => {
-            const hash = shortenUrl.hash
-            const result = host + '/' + hash
-            res.render('result', { result })
-          }).catch(error => {
-            console.log(error)
-            res.status(500).send()
-          })
+        urlExisted = true
+        return Promise.reject('url existed')
+      }
+    })
+    .then(() => validateHash(random(5)))
+    .then(hash => { return ShortenUrl.create({ hash, url }) })
+    .then(shortenUrl => {
+      const hash = shortenUrl.hash
+      const result = host + '/' + hash
+      res.render('result', { result })
+    }).catch(error => {
+      if (!urlExisted) {
+        console.log(error)
+        res.status(500).send()
       }
     })
 })
