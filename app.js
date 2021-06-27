@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000
 app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
 app.use(express.urlencoded({ extended: true }))
+app.use(ignoreFavicon)
 
 //index route
 app.get('/', (req, res) => {
@@ -35,7 +36,7 @@ app.post('/', (req, res) => {
 //redirect short url to original url
 app.get('/:hash', (req, res) => {
   const hash = req.params.hash
-  return ShortenUrl.findOne({ hash })
+  return ShortenUrl.findOne({ hash }).lean()
     .then(shortenUrl => res.redirect(shortenUrl.url))
     .catch(error => {
       console.log(error)
@@ -68,4 +69,13 @@ const validateHash = function (hash, retry) {
       return hash
     }
   })
+}
+
+//prevent GET /favicon.ico
+function ignoreFavicon(req, res, next) {
+  if (req.originalUrl.includes('favicon.ico')) {
+    res.status(204).end()
+  } else {
+    next();
+  }
 }
