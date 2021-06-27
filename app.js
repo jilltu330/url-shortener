@@ -19,15 +19,17 @@ app.get('/', (req, res) => {
 //post url submit
 app.post('/', (req, res) => {
   const url = req.body.url
-  const header = req.headers.origin
+  const host = req.headers.origin
   return validateHash(random(5))
-  .then(hash => { return ShortenUrl.create({ hash, url })})
-  .then(shortenUrl => {
-    console.log(shortenUrl)
-    const hash = shortenUrl.hash
-    const result = header + '/' + hash
-    res.render('result', { result })
-  }).catch(error => { res.status(500).send() })
+    .then(hash => { return ShortenUrl.create({ hash, url }) })
+    .then(shortenUrl => {
+      const hash = shortenUrl.hash
+      const result = host + '/' + hash
+      res.render('result', { result })
+    }).catch(error => {
+      console.log(error)
+      res.status(500).send()
+    })
 })
 
 //redirect short url to original url
@@ -35,7 +37,10 @@ app.get('/:hash', (req, res) => {
   const hash = req.params.hash
   return ShortenUrl.findOne({ hash })
     .then(shortenUrl => res.redirect(shortenUrl.url))
-    .catch(error => { res.status(500).send() })
+    .catch(error => {
+      console.log(error)
+      res.status(500).send()
+    })
 })
 
 app.listen(PORT, () => [
@@ -43,13 +48,23 @@ app.listen(PORT, () => [
 ])
 
 // hash validation function
-const validateHash = function (hash) {
+const validateHash = function (hash, retry) {
+  //若亂數已存在，最多重新生產驗證五次，防止進入無窮迴圈
+  retry = retry | 5
   return ShortenUrl.exists({ hash }).then(exist => {
+    //若亂數存在，
     if (exist) {
       console.log("duplicated hash:" + hash)
-      hash = random(5)
-      return validateHash(hash)
+      //驗證大於0次，可重新生產亂數並驗證
+      if (retry > 0) {
+        hash = random(5)
+        return validateHash(hash, retry - 1)
+      } else {
+        //否則通知亂數生產error
+        throw new Error('hash generate error')
+      }
     } else {
+      //通過驗證，傳回繼續作業
       return hash
     }
   })
