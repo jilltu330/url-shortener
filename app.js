@@ -21,15 +21,23 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
   const url = req.body.url
   const host = req.headers.origin
-  return validateHash(random(5))
-    .then(hash => { return ShortenUrl.create({ hash, url }) })
-    .then(shortenUrl => {
-      const hash = shortenUrl.hash
-      const result = host + '/' + hash
-      res.render('result', { result })
-    }).catch(error => {
-      console.log(error)
-      res.status(500).send()
+  ShortenUrl.find({ url }).lean()
+    .then(urls => {
+      if (urls.length > 0) {
+        const result = host + '/' + urls[0].hash
+        res.render('result', { result })
+      } else {
+        validateHash(random(5))
+          .then(hash => { return ShortenUrl.create({ hash, url }) })
+          .then(shortenUrl => {
+            const hash = shortenUrl.hash
+            const result = host + '/' + hash
+            res.render('result', { result })
+          }).catch(error => {
+            console.log(error)
+            res.status(500).send()
+          })
+      }
     })
 })
 
