@@ -1,17 +1,20 @@
 <div class="row d-flex justify-content-center">
   <div class="col-8">
-    <div class="card text-center">
+    <div class="card border-primary text-center bg-light p-3">
       <div class="card-top my-5">
-        <h2 class="my-4">URL Shortener</h2>
-        <i class="fas fa-link fa-7x my-4"></i>
+        <h2 class="my-4" style="color:black; font-size: 3em;">URL Shortener</h2>
+        <span style="color: Tomato;">
+          <i class="fas fa-link fa-7x my-4"></i>
+        </span>
       </div>
       <div class="card-body">
         <form method="POST">
           <div class="form-group">
-            <input type="url" class="form-control" style="background-color:#f0f0f5; border:none;" id="url" name="url"
+            <input type="url" class="form-control form-control-lg" style="background-color:#f0f0f5; border:none;" id="url" name="url"
               placeholder="input URL here" required>
           </div>
-          <button type="submit" class="btn btn-outline-primary" name="shorten-btn" style="width:180px;">Shorten</button>
+          <button type="submit" class="btn btn-outline-primary mt-3" name="shorten-btn"
+            style="width:180px;">Shorten</button>
         </form>
       </div>
     </div>

@@ -11,10 +11,12 @@ app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
 app.use(express.urlencoded({ extended: true }))
 
+//index route
 app.get('/', (req, res) => {
   res.render('index')
 })
 
+//post url submit
 app.post('/', (req, res) => {
   const url = req.body.url
   const header = req.headers.origin
@@ -28,6 +30,7 @@ app.post('/', (req, res) => {
   }).catch(error => { res.status(500).send() })
 })
 
+//redirect short url to original url
 app.get('/:hash', (req, res) => {
   const hash = req.params.hash
   return ShortenUrl.findOne({ hash })
